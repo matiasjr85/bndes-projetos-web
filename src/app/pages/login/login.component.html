@@ -1,0 +1,17 @@
+<form (ngSubmit)="submit()" [formGroup]="form" style="max-width:360px; margin:40px auto; display:grid; gap:12px;">
+  <h2>Login</h2>
+
+  <input placeholder="Email" formControlName="email" />
+  <small *ngIf="form.controls['email']?.touched && form.controls['email']?.invalid">
+    Email inválido
+  </small>
+
+  <input placeholder="Senha" type="password" formControlName="password" />
+  <small *ngIf="form.controls['password']?.touched && form.controls['password']?.invalid">
+    Senha obrigatória
+  </small>
+
+  <button type="submit" [disabled]="loading">Entrar</button>
+
+  <small *ngIf="error">{{ error }}</small>
+</form>
