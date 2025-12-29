@@ -41,7 +41,7 @@ export class LoginComponent {
       next: () => {
         this.loading = false;
         // quando existir /projects, mude pra /projects
-        this.router.navigate(['/login']);
+        this.router.navigate(['/projects']);
       },
       error: (err) => {
         this.loading = false;

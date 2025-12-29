@@ -1,23 +1,20 @@
 import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from './auth.service';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token');
+  const auth = inject(AuthService);
+  const token = auth.getToken();
 
-  // rotas públicas (não devem levar token)
-  const isPublic =
-    req.url.includes('/auth/login') ||
-    req.url.includes('/auth/register') ||
-    req.url.includes('/health');
-
-  if (!token || isPublic) {
+  if (!token) return next(req);
+  
+  if (req.url.includes('/auth/login') || req.url.includes('/auth/register')) {
     return next(req);
   }
 
-  const authReq = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
+  const cloned = req.clone({
+    setHeaders: { Authorization: `Bearer ${token}` },
   });
 
-  return next(authReq);
+  return next(cloned);
 };

@@ -1,1 +1,39 @@
-<p>project-detail works!</p>
+<mat-card>
+  <mat-card-title>Detalhe do Projeto</mat-card-title>
+
+  <mat-card-content>
+    <div *ngIf="loading" style="display:flex; justify-content:center; padding:16px;">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+
+    <div *ngIf="!loading && project" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+      <div><strong>ID:</strong> {{ project.id }}</div>
+      <div><strong>Nome:</strong> {{ project.name }}</div>
+      <div><strong>Descrição:</strong> {{ project.description }}</div>
+      <div><strong>Valor:</strong> {{ project.value }}</div>
+      <div><strong>Ativo:</strong> {{ project.active ? 'Sim' : 'Não' }}</div>
+      <div><strong>Início:</strong> {{ project.startDate }}</div>
+      <div><strong>Fim:</strong> {{ project.endDate }}</div>
+
+      <div style="margin-top:8px; font-size: 12px; opacity: 0.8;">
+        <div><strong>Criado em:</strong> {{ project.createdAt }}</div>
+        <div><strong>Atualizado em:</strong> {{ project.updatedAt }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !project" style="padding:12px;">
+      Projeto não encontrado.
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions style="display:flex; gap:12px; justify-content:flex-end;">
+    <button mat-button (click)="back()" [disabled]="loading">
+      Voltar
+    </button>
+
+    <button mat-raised-button color="primary" (click)="edit()" [disabled]="loading || !project">
+      <mat-icon>edit</mat-icon>
+      Editar
+    </button>
+  </mat-card-actions>
+</mat-card>

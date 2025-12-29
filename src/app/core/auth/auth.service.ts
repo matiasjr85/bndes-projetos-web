@@ -21,15 +21,19 @@ export interface RegisterRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly TOKEN_KEY = 'token'; // <- deixe IGUAL ao que você viu no DevTools
+  // padrão único
+  private readonly TOKEN_KEY = 'token';
 
-  constructor(private http: HttpClient) {}
+  // legado (pra não herdar token antigo de outros testes)
+  private readonly LEGACY_KEYS = ['bndes_token'];
+
+  constructor(private http: HttpClient) {
+    this.migrateLegacyTokenIfNeeded();
+  }
 
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/auth/login', payload).pipe(
-      tap((res) => {
-        this.setToken(res.token);
-      })
+      tap(res => this.setToken(res.token))
     );
   }
 
@@ -39,17 +43,32 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    this.LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
   }
 
-  get token(): string | null {
+  getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
   isAuthenticated(): boolean {
-    return !!this.token;
+    return !!this.getToken();
   }
 
   private setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  private migrateLegacyTokenIfNeeded(): void {
+    const current = localStorage.getItem(this.TOKEN_KEY);
+    if (current) return;
+
+    for (const key of this.LEGACY_KEYS) {
+      const legacy = localStorage.getItem(key);
+      if (legacy) {
+        localStorage.setItem(this.TOKEN_KEY, legacy);
+        localStorage.removeItem(key);
+        break;
+      }
+    }
   }
 }

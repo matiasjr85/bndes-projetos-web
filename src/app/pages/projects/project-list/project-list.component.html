@@ -1,1 +1,104 @@
-<p>project-list works!</p>
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+  <h2 style="margin:0;">Projetos</h2>
+
+  <span style="flex:1;"></span>
+
+  <button mat-raised-button color="primary" routerLink="/projects/new">
+    <mat-icon>add</mat-icon>
+    Novo
+  </button>
+</div>
+
+<form [formGroup]="form" style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+  <mat-form-field appearance="outline" style="flex:1;">
+    <mat-label>Pesquisar</mat-label>
+    <input matInput formControlName="q" placeholder="nome / descrição..." />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:220px;">
+    <mat-label>Ativo</mat-label>
+    <mat-select formControlName="active">
+      <mat-option [value]="null">Todos</mat-option>
+      <mat-option [value]="true">Ativos</mat-option>
+      <mat-option [value]="false">Inativos</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:220px;">
+    <mat-label>Ordenação</mat-label>
+    <mat-select formControlName="sort">
+      <mat-option value="id,desc">ID desc</mat-option>
+      <mat-option value="id,asc">ID asc</mat-option>
+      <mat-option value="name,asc">Nome asc</mat-option>
+      <mat-option value="name,desc">Nome desc</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-stroked-button type="button" (click)="applyFilters()">
+    <mat-icon>search</mat-icon>
+    Filtrar
+  </button>
+</form>
+
+<div *ngIf="loading" style="display:flex; justify-content:center; padding:20px;">
+  <mat-spinner></mat-spinner>
+</div>
+
+<div *ngIf="!loading">
+  <table mat-table [dataSource]="data" class="mat-elevation-z1" style="width:100%;">
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef>ID</th>
+      <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="value">
+      <th mat-header-cell *matHeaderCellDef>Valor</th>
+      <td mat-cell *matCellDef="let row">{{ row.value }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="active">
+      <th mat-header-cell *matHeaderCellDef>Ativo</th>
+      <td mat-cell *matCellDef="let row">{{ row.active ? 'Sim' : 'Não' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="startDate">
+      <th mat-header-cell *matHeaderCellDef>Início</th>
+      <td mat-cell *matCellDef="let row">{{ row.startDate }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="endDate">
+      <th mat-header-cell *matHeaderCellDef>Fim</th>
+      <td mat-cell *matCellDef="let row">{{ row.endDate }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let row" style="white-space:nowrap;">
+    
+        <button mat-icon-button [routerLink]="['/projects', row.id]">
+            <mat-icon>visibility</mat-icon>
+        </button>
+
+        <button mat-icon-button [routerLink]="['/projects', row.id, 'edit']">
+            <mat-icon>edit</mat-icon>
+        </button>
+        </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator
+    [length]="totalElements"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20, 50]"
+    (page)="onPage($event)">
+  </mat-paginator>
+</div>
