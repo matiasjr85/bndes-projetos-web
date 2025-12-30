@@ -1,16 +1,14 @@
 @use '@angular/material' as mat;
 
-// 1) Obrigatório: core do Material
 @include mat.core();
 
-// 2) Paletas custom (BNDES-like)
 $bndes-green-palette: (
   50:  #e6f4ed,
   100: #bfe6d2,
   200: #95d7b5,
   300: #6ac897,
   400: #47bc81,
-  500: #008e47, // principal
+  500: #008e47, 
   600: #008241,
   700: #007337,
   800: #00642e,
@@ -35,7 +33,7 @@ $bndes-blue-palette: (
   200: #9fc4ed,
   300: #78ace5,
   400: #5b9add,
-  500: #2a7bc8, // acento
+  500: #2a7bc8, 
   600: #256fb4,
   700: #1f5f99,
   800: #194f7f,
@@ -54,12 +52,10 @@ $bndes-blue-palette: (
   )
 );
 
-// 3) Converte mapas em palettes do Material (M2)
 $primary: mat.m2-define-palette($bndes-green-palette, 500, 300, 700);
 $accent: mat.m2-define-palette($bndes-blue-palette, 500, 300, 700);
 $warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-// 4) Define tema
 $theme: mat.m2-define-light-theme((
   color: (
     primary: $primary,
@@ -70,10 +66,8 @@ $theme: mat.m2-define-light-theme((
   density: 0
 ));
 
-// 5) Aplica tema em todos componentes
 @include mat.all-component-themes($theme);
 
-// 6) Base global (opcional, mas dá um acabamento profissional)
 html, body {
   height: 100%;
 }

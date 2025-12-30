@@ -2,7 +2,6 @@ import { Component, ViewChild, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,9 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
 import { MatDialog, MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-
 import { Project, ProjectService } from '../../../core/projects/project.service';
 
 @Component({
@@ -60,8 +57,7 @@ export class ConfirmDialogComponent {
   styleUrl: './project-list.component.scss',
 })
 export class ProjectListComponent {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  
+  @ViewChild(MatPaginator) paginator!: MatPaginator;  
 
   loading = false;
 
@@ -87,8 +83,7 @@ export class ProjectListComponent {
     active: [null as null | boolean],
     sort: ['id,desc'],
   });
-
-  // ✅ auto-filtrar quando mudar Ativo
+  
   this.form.get('active')?.valueChanges.subscribe(() => {
     this.applyFilters();
   });
@@ -155,8 +150,7 @@ export class ProjectListComponent {
       if (!confirmed) return;
 
       this.deletingIds.add(p.id);
-
-      // precisa existir no service: delete(id: number)
+      
       this.service.delete(p.id).subscribe({
         next: () => {
           this.snack.open('Projeto excluído com sucesso.', 'Fechar', { duration: 2500 });

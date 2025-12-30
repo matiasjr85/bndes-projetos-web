@@ -7,13 +7,11 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
-
 export interface LoginResponse {
-  token: string;              // pode vir "eyJ..." ou "Bearer eyJ..."
-  tokenType?: string;         // "Bearer"
-  expiresInSeconds?: number;  // 7200
+  token: string;              
+  tokenType?: string;         
+  expiresInSeconds?: number;  
 }
-
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -61,13 +59,11 @@ export class AuthService {
 
   private normalizeToken(token: string, tokenType?: string): string {
     if (!token) return token;
-
-    // se já veio "Bearer xxx", guarda só o xxx
+    
     if (token.toLowerCase().startsWith('bearer ')) {
       return token.slice(7).trim();
     }
-
-    // se veio token puro e tokenType=Bearer, mantém token puro (interceptor adiciona "Bearer ")
+    
     return token.trim();
   }
 

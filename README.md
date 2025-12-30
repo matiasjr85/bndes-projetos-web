@@ -1,59 +1,159 @@
-# BndesProjetosWeb
+BNDES Projetos Web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+Frontend da aplicação BNDES Projetos, desenvolvido em Angular 19 com foco em autenticação JWT, rotas protegidas e integração completa com uma API REST.
 
-## Development server
+O sistema permite:
 
-To start a local development server, run:
+Autenticação de usuários (login e cadastro)
 
-```bash
+Listagem, criação, edição e visualização de projetos
+
+Comunicação segura com backend via JWT
+
+Interface moderna com Angular Material
+
+🛠️ Tecnologias Principais
+
+Angular 19
+
+TypeScript
+
+Angular Material
+
+RxJS
+
+JWT (JSON Web Token)
+
+SCSS
+
+Angular Standalone Components
+
+Proxy de desenvolvimento (Angular Dev Server)
+
+📦 Bibliotecas Utilizadas
+
+Principais dependências do projeto:
+
+@angular/core
+@angular/router
+@angular/forms
+@angular/common
+@angular/platform-browser
+@angular/platform-browser/animations
+@angular/material
+rxjs
+
+
+Caso precise instalar manualmente (normalmente já vêm no projeto):
+
+npm install @angular/material
+
+📁 Arquitetura do Projeto (resumo)
+src/
+ ├─ app/
+ │   ├─ core/
+ │   │   └─ auth/
+ │   │       ├─ auth.service.ts
+ │   │       ├─ auth.guard.ts
+ │   │       └─ jwt.interceptor.ts
+ │   ├─ layout/
+ │   │   └─ main-layout/
+ │   ├─ pages/
+ │   │   ├─ login/
+ │   │   ├─ register/
+ │   │   └─ projects/
+ │   ├─ app.routes.ts
+ │   └─ app.component.ts
+ ├─ styles.scss
+ └─ main.ts
+
+🔐 Autenticação
+
+Autenticação baseada em JWT
+
+Token armazenado no localStorage
+
+Interceptor (jwt.interceptor.ts) injeta automaticamente o token nas requisições
+
+AuthGuard protege rotas privadas
+
+Rotas públicas:
+
+/login
+
+/register
+
+Rotas privadas:
+
+/projects
+
+🌐 Integração com Backend
+
+Durante o desenvolvimento, o projeto utiliza proxy para evitar problemas de CORS.
+
+Arquivo de proxy
+
+proxy.conf.json
+
+Exemplo:
+
+{
+  "/auth": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/projects": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+
+
+O backend deve estar rodando em:
+
+http://localhost:8080
+
+▶️ Rodando o Projeto Localmente
+1️⃣ Instalar dependências
+npm install
+
+2️⃣ Subir o servidor de desenvolvimento
 ng serve
-```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
+Ou explicitamente:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+ng serve --configuration development
 
-```bash
-ng generate component component-name
-```
+3️⃣ Acessar no navegador
+http://localhost:4200
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-```bash
-ng generate --help
-```
+⚠️ Importante:
+O proxy só funciona com ng serve.
+Não utilize ng build para testes locais de API.
 
-## Building
+📌 Observações Importantes
 
-To build the project run:
+Projeto utiliza Standalone Components (Angular moderno)
 
-```bash
-ng build
-```
+Não há NgModule
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Interceptors são registrados via provideHttpClient
 
-## Running unit tests
+Layout principal centralizado no MainLayoutComponent
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Código organizado para fácil evolução e manutenção
 
-```bash
-ng test
-```
+📚 Recursos Úteis
 
-## Running end-to-end tests
+Angular CLI
+https://angular.dev/tools/cli
 
-For end-to-end (e2e) testing, run:
+Angular Material
+https://material.angular.io/
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Angular Router
+https://angular.dev/guide/routing

@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +12,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
-
 import { Project, ProjectService } from '../../../core/projects/project.service';
 
 @Component({
@@ -23,7 +21,6 @@ import { Project, ProjectService } from '../../../core/projects/project.service'
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -57,8 +54,8 @@ export class ProjectFormComponent {
       description: [''],
       value: [0, [Validators.required, Validators.min(0)]],
       active: [true],
-      startDate: [null, Validators.required], // Date
-      endDate: [null, Validators.required],   // Date
+      startDate: [null, Validators.required], 
+      endDate: [null, Validators.required],   
     });
 
     const idParam = this.route.snapshot.paramMap.get('id');

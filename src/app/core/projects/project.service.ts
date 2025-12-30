@@ -8,10 +8,10 @@ export interface Project {
   description: string;
   value: number | string;
   active: boolean;
-  startDate: string;  // yyyy-MM-dd
-  endDate: string;    // yyyy-MM-dd
-  createdAt: string;  // ISO
-  updatedAt: string;  // ISO
+  startDate: string;  
+  endDate: string;    
+  createdAt: string;  
+  updatedAt: string;  
 }
 
 export interface SortInfo {
@@ -46,9 +46,9 @@ export interface PageResponse<T> {
 export interface ListProjectsParams {
   active?: boolean | null;
   q?: string;
-  page?: number; // 0-based
+  page?: number; 
   size?: number;
-  sort?: string; // ex: "id,desc"
+  sort?: string; 
 }
 
 @Injectable({ providedIn: 'root' })

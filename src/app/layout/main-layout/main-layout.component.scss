@@ -1,5 +1,5 @@
 .topbar {
-  background: #0b6b3a; // verde BNDES (aprox.)
+  background: #0b6b3a; 
   color: #fff;
 }
 
@@ -8,10 +8,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
-  /* ISSO AQUI é o que define o “tamanho bom” */
+  
   width: 100%;
-  max-width: 1280px;  // aumente para 1440 se quiser mais largo
+  max-width: 1280px;  
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -21,7 +20,7 @@
 
 .page {
   width: 100%;
-  max-width: 1280px;  // mesma largura do topo
+  max-width: 1280px;  
   margin: 24px auto;
   padding: 0 16px;
 }
