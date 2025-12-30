@@ -2,16 +2,19 @@
   "/auth": {
     "target": "http://127.0.0.1:8080",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "logLevel": "debug"
   },
   "/projects": {
     "target": "http://127.0.0.1:8080",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "logLevel": "debug"
   },
   "/health": {
     "target": "http://127.0.0.1:8080",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }

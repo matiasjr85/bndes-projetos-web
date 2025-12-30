@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
+import { RegisterComponent } from './pages/register/register.component';
 import { authGuard } from './core/auth/auth.guard';
 
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
@@ -10,6 +11,7 @@ import { ProjectDetailComponent } from './pages/projects/project-detail/project-
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
 
   // ✅ inclusão: layout no topo protegendo as rotas privadas
   {

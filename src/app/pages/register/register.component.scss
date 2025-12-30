@@ -1,0 +1,33 @@
+.auth-wrap {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(520px, 92vw);
+  padding: 12px 8px;
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 16px 0;
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.full {
+  width: 100%;
+}
+
+.btn {
+  height: 44px;
+  font-weight: 600;
+}

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 export interface LoginRequest {
@@ -9,9 +9,9 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  tokenType?: string;          // "Bearer"
-  expiresInSeconds?: number;   // 7200
+  token: string;              // pode vir "eyJ..." ou "Bearer eyJ..."
+  tokenType?: string;         // "Bearer"
+  expiresInSeconds?: number;  // 7200
 }
 
 export interface RegisterRequest {
@@ -21,10 +21,7 @@ export interface RegisterRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // padrão único
   private readonly TOKEN_KEY = 'token';
-
-  // legado (pra não herdar token antigo de outros testes)
   private readonly LEGACY_KEYS = ['bndes_token'];
 
   constructor(private http: HttpClient) {
@@ -33,7 +30,11 @@ export class AuthService {
 
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/auth/login', payload).pipe(
-      tap(res => this.setToken(res.token))
+      map((res) => {
+        const normalized = this.normalizeToken(res.token, res.tokenType);
+        this.setToken(normalized);
+        return res;
+      })
     );
   }
 
@@ -56,6 +57,18 @@ export class AuthService {
 
   private setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  private normalizeToken(token: string, tokenType?: string): string {
+    if (!token) return token;
+
+    // se já veio "Bearer xxx", guarda só o xxx
+    if (token.toLowerCase().startsWith('bearer ')) {
+      return token.slice(7).trim();
+    }
+
+    // se veio token puro e tokenType=Bearer, mantém token puro (interceptor adiciona "Bearer ")
+    return token.trim();
   }
 
   private migrateLegacyTokenIfNeeded(): void {
