@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +13,30 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { MatDialog, MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+
 import { Project, ProjectService } from '../../../core/projects/project.service';
+
+@Component({
+  selector: 'app-confirm-dialog',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <div mat-dialog-content>{{ data.message }}</div>
+
+    <div mat-dialog-actions align="end">
+      <button mat-button (click)="dialogRef.close(false)">Cancelar</button>
+      <button mat-flat-button color="warn" (click)="dialogRef.close(true)">Excluir</button>
+    </div>
+  `,
+})
+export class ConfirmDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { title: string; message: string }
+  ) {}
+}
 
 @Component({
   selector: 'app-project-list',
@@ -31,12 +54,14 @@ import { Project, ProjectService } from '../../../core/projects/project.service'
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDialogModule,
   ],
   templateUrl: './project-list.component.html',
   styleUrl: './project-list.component.scss',
 })
 export class ProjectListComponent {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
 
   loading = false;
 
@@ -47,22 +72,36 @@ export class ProjectListComponent {
   pageIndex = 0;
   pageSize = 10;
 
-  // ✅ agora não usamos this.fb aqui fora
   form!: FormGroup;
 
-  constructor(
-    private fb: FormBuilder,
-    private service: ProjectService,
-    private snack: MatSnackBar
-  ) {
-    // ✅ inicializa o form depois que fb existe
-    this.form = this.fb.group({
-      q: [''],
-      active: [null as null | boolean],
-      sort: ['id,desc'],
-    });
+  private deletingIds = new Set<number>();
 
-    this.load();
+  constructor(
+  private fb: FormBuilder,
+  private service: ProjectService,
+  private snack: MatSnackBar,
+  private dialog: MatDialog
+) {
+  this.form = this.fb.group({
+    q: [''],
+    active: [null as null | boolean],
+    sort: ['id,desc'],
+  });
+
+  // ✅ auto-filtrar quando mudar Ativo
+  this.form.get('active')?.valueChanges.subscribe(() => {
+    this.applyFilters();
+  });
+
+  this.form.get('sort')?.valueChanges.subscribe(() => {
+    this.applyFilters();
+  });
+
+  this.load();
+}
+
+  isDeleting(id: number): boolean {
+    return this.deletingIds.has(id);
   }
 
   load(pageIndex = this.pageIndex, pageSize = this.pageSize) {
@@ -87,18 +126,54 @@ export class ProjectListComponent {
         },
         error: () => {
           this.loading = false;
-          this.snack.open('Falha ao carregar projetos (401? token?)', 'Fechar', { duration: 4000 });
+          this.snack.open('Falha ao carregar projetos. Tente novamente.', 'Fechar', { duration: 4000 });
         },
       });
   }
 
   applyFilters() {
-    this.pageIndex = 0;
-    if (this.paginator) this.paginator.firstPage();
-    this.load(0, this.pageSize);
-  }
+  console.log('applyFilters clicado', this.form.getRawValue());
+  this.pageIndex = 0;
+  if (this.paginator) this.paginator.firstPage();
+  this.load(0, this.pageSize);
+}
 
   onPage(e: PageEvent) {
     this.load(e.pageIndex, e.pageSize);
+  }
+
+  onDelete(p: Project) {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Excluir projeto',
+        message: `Deseja realmente excluir o projeto ${p?.name ? `"${p.name}"` : `#${p.id}`}?`,
+      },
+    });
+
+    ref.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.deletingIds.add(p.id);
+
+      // precisa existir no service: delete(id: number)
+      this.service.delete(p.id).subscribe({
+        next: () => {
+          this.snack.open('Projeto excluído com sucesso.', 'Fechar', { duration: 2500 });
+
+          if ((this.data?.length ?? 0) === 1 && this.pageIndex > 0) {
+            this.pageIndex = this.pageIndex - 1;
+          }
+
+          this.load(this.pageIndex, this.pageSize);
+        },
+        error: () => {
+          this.snack.open('Falha ao excluir projeto. Tente novamente.', 'Fechar', { duration: 3000 });
+        },
+        complete: () => {
+          this.deletingIds.delete(p.id);
+        },
+      });
+    });
   }
 }
