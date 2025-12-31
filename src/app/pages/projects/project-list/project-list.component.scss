@@ -1,0 +1,38 @@
+/* Espaçamento do título e botão, abaixo da barra verde */
+.projects-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* Esse é o espaçamento que você pediu: afastar da barra verde */
+  margin-top: 15px;
+  margin-bottom: 12px;
+}
+
+.projects-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* Ajusta o botão "Novo" pra ficar alinhado e com altura consistente */
+.projects-new-btn {
+  height: 40px;
+}
+
+/* Linha de filtros */
+.projects-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.projects-search {
+  flex: 1;
+}
+
+.projects-active,
+.projects-sort {
+  width: 220px;
+}
