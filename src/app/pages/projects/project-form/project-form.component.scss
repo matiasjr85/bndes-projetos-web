@@ -1,0 +1,18 @@
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.project-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.project-loading {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}

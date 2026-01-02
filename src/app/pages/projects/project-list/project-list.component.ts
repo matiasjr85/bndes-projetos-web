@@ -54,7 +54,7 @@ export class ConfirmDialogComponent {
     MatDialogModule,
   ],
   templateUrl: './project-list.component.html',
-  styleUrl: './project-list.component.scss',
+  styleUrls: ['./project-list.component.scss'],
 })
 export class ProjectListComponent {
   @ViewChild(MatPaginator) paginator!: MatPaginator;  

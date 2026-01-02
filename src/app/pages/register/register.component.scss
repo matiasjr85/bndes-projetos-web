@@ -7,7 +7,6 @@ mat-error div {
   line-height: 1.2;
 }
 
-/* Corrige o “label cortado na linha” no outline (Material MDC) */
 :host ::ng-deep .mat-mdc-form-field-appearance-outline .mat-mdc-notched-outline__notch {
   padding-top: 2px;
 }
@@ -16,7 +15,6 @@ mat-error div {
   line-height: 1.2;
 }
 
-/* Garante espaço da área de erro/hint e evita encostar no outline */
 :host ::ng-deep .mat-mdc-form-field-subscript-wrapper {
   min-height: 22px;
   padding-top: 4px;

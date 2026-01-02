@@ -3,8 +3,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  /* Esse é o espaçamento que você pediu: afastar da barra verde */
   margin-top: 15px;
   margin-bottom: 12px;
 }
@@ -15,7 +13,7 @@
   font-weight: 500;
 }
 
-/* Ajusta o botão "Novo" pra ficar alinhado e com altura consistente */
+/* Ajusta o botão "Novo" */
 .projects-new-btn {
   height: 40px;
 }
@@ -35,4 +33,48 @@
 .projects-active,
 .projects-sort {
   width: 220px;
+}
+
+/* Wrapper para tabela no mobile */
+.projects-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.projects-table-wrapper table {
+  width: 100%;
+  min-width: 900px;  /* só para telas pequenas; em desktop ocupa 100% mesmo */
+}
+
+/* Ações */
+.projects-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Mobile */
+@media (max-width: 992px) {
+  .projects-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .projects-new-btn {
+    width: 100%;
+  }
+
+  .projects-table-wrapper table {
+    min-width: 0;
+  }
+
+  .projects-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .projects-active,
+  .projects-sort {
+    width: 100%;
+  }
 }

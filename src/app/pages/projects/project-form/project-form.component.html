@@ -2,20 +2,20 @@
   <mat-card-title>{{ isEdit ? 'Editar Projeto' : 'Novo Projeto' }}</mat-card-title>
 
   <mat-card-content>
-    <form [formGroup]="form" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
-      <mat-form-field appearance="outline">
+    <form [formGroup]="form" class="project-form">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Nome</mat-label>
         <input matInput formControlName="name" />
         <mat-error *ngIf="form.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
         <mat-error *ngIf="form.get('name')?.hasError('minlength')">Mínimo 3 caracteres</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Descrição</mat-label>
         <textarea matInput rows="3" formControlName="description"></textarea>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Valor</mat-label>
         <input matInput type="number" formControlName="value" />
         <mat-error *ngIf="form.get('value')?.hasError('required')">Valor é obrigatório</mat-error>
@@ -24,35 +24,33 @@
 
       <mat-checkbox formControlName="active">Ativo</mat-checkbox>
 
-      <div style="display:flex; gap:12px;">
-        <mat-form-field appearance="outline" style="flex:1;">
-          <mat-label>Data início</mat-label>
-          <input matInput [matDatepicker]="dp1" formControlName="startDate" />
-          <mat-datepicker-toggle matIconSuffix [for]="dp1"></mat-datepicker-toggle>
-          <mat-datepicker #dp1></mat-datepicker>
-          <mat-error *ngIf="form.get('startDate')?.hasError('required')">Obrigatório</mat-error>
-        </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Data de início</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+        <mat-error *ngIf="form.get('startDate')?.hasError('required')">Data de início é obrigatória</mat-error>
+      </mat-form-field>
 
-        <mat-form-field appearance="outline" style="flex:1;">
-          <mat-label>Data fim</mat-label>
-          <input matInput [matDatepicker]="dp2" formControlName="endDate" />
-          <mat-datepicker-toggle matIconSuffix [for]="dp2"></mat-datepicker-toggle>
-          <mat-datepicker #dp2></mat-datepicker>
-          <mat-error *ngIf="form.get('endDate')?.hasError('required')">Obrigatório</mat-error>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Data de fim (opcional)</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
     </form>
   </mat-card-content>
 
-  <mat-card-actions style="display:flex; gap:12px; justify-content:flex-end;">
+  <mat-card-actions class="project-actions">
     <button mat-button (click)="cancel()" [disabled]="loading">Cancelar</button>
+
     <button mat-raised-button color="primary" (click)="save()" [disabled]="loading">
       <mat-icon>save</mat-icon>
       Salvar
     </button>
   </mat-card-actions>
 
-  <div *ngIf="loading" style="display:flex; justify-content:center; padding:12px;">
+  <div *ngIf="loading" class="project-loading">
     <mat-spinner diameter="32"></mat-spinner>
   </div>
 </mat-card>

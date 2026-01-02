@@ -9,13 +9,7 @@ import { AuthService } from '../../core/auth/auth.service';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    NgIf,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-  ],
+  imports: [RouterOutlet, NgIf, MatToolbarModule, MatButtonModule, MatIconModule],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
 })
@@ -27,7 +21,9 @@ export class MainLayoutComponent {
   }
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
+    // chama backend (blacklist) e limpa local mesmo se falhar
+    this.auth.logoutRemote().subscribe(() => {
+      this.router.navigateByUrl('/login');
+    });
   }
 }

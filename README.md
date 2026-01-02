@@ -1,20 +1,26 @@
-BNDES Projetos Web
+🖥️ BNDES Projetos Web
 
-Frontend da aplicação BNDES Projetos, desenvolvido em Angular 19 com foco em autenticação JWT, rotas protegidas e integração completa com uma API REST.
+Frontend desenvolvido em Angular + Angular Material para consumo da API BNDES Projetos, com foco em organização, UX e integração segura via JWT.
 
-O sistema permite:
+🚀 O que este sistema faz
 
-Autenticação de usuários (login e cadastro)
+Permite cadastro e autenticação de usuários (Login / Register)
 
-Listagem, criação, edição e visualização de projetos
+Lista projetos com paginação, filtro e ordenação
 
-Comunicação segura com backend via JWT
+Permite CRUD de projetos (criar, editar, visualizar e excluir)
 
-Interface moderna com Angular Material
+Aplica formatação de moeda (BRL) e datas (pt-BR)
 
-🛠️ Tecnologias Principais
+Protege rotas com AuthGuard
 
-Angular 19
+Anexa JWT automaticamente nas requisições (Interceptor)
+
+Trata 401/403 globalmente com redirecionamento e mensagem (Interceptor)
+
+🧰 Tecnologias
+
+Angular 19 (Standalone Components)
 
 TypeScript
 
@@ -22,138 +28,83 @@ Angular Material
 
 RxJS
 
-JWT (JSON Web Token)
+Angular Router
 
-SCSS
+📡 Integração com a API (Proxy)
 
-Angular Standalone Components
+Este frontend usa proxy no ambiente de desenvolvimento para evitar problemas de CORS.
 
-Proxy de desenvolvimento (Angular Dev Server)
+Arquivo: proxy.conf.json
 
-📦 Bibliotecas Utilizadas
+Rotas encaminhadas para a API:
+- /auth    -> http://127.0.0.1:8080
+- /projects -> http://127.0.0.1:8080
+- /health  -> http://127.0.0.1:8080
 
-Principais dependências do projeto:
+Obs.: O proxy já está configurado no angular.json (serve.options.proxyConfig).
 
-@angular/core
-@angular/router
-@angular/forms
-@angular/common
-@angular/platform-browser
-@angular/platform-browser/animations
-@angular/material
-rxjs
+✅ Requisitos
 
+Node.js 18+ (recomendado)
 
-Caso precise instalar manualmente (normalmente já vêm no projeto):
+Angular CLI 19+
 
-npm install @angular/material
+API rodando em http://127.0.0.1:8080
 
-📁 Arquitetura do Projeto (resumo)
-src/
- ├─ app/
- │   ├─ core/
- │   │   └─ auth/
- │   │       ├─ auth.service.ts
- │   │       ├─ auth.guard.ts
- │   │       └─ jwt.interceptor.ts
- │   ├─ layout/
- │   │   └─ main-layout/
- │   ├─ pages/
- │   │   ├─ login/
- │   │   ├─ register/
- │   │   └─ projects/
- │   ├─ app.routes.ts
- │   └─ app.component.ts
- ├─ styles.scss
- └─ main.ts
+▶️ Rodar aplicação (dev)
 
-🔐 Autenticação
-
-Autenticação baseada em JWT
-
-Token armazenado no localStorage
-
-Interceptor (jwt.interceptor.ts) injeta automaticamente o token nas requisições
-
-AuthGuard protege rotas privadas
-
-Rotas públicas:
-
-/login
-
-/register
-
-Rotas privadas:
-
-/projects
-
-🌐 Integração com Backend
-
-Durante o desenvolvimento, o projeto utiliza proxy para evitar problemas de CORS.
-
-Arquivo de proxy
-
-proxy.conf.json
-
-Exemplo:
-
-{
-  "/auth": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "changeOrigin": true
-  },
-  "/projects": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
-
-
-O backend deve estar rodando em:
-
-http://localhost:8080
-
-▶️ Rodando o Projeto Localmente
-1️⃣ Instalar dependências
+1) Instalar dependências
 npm install
 
-2️⃣ Subir o servidor de desenvolvimento
-ng serve
+2) Subir o frontend
+npm start
 
+Frontend: http://localhost:4200
 
-Ou explicitamente:
+▶️ Rodar a API (backend)
 
-ng serve --configuration development
+No projeto bndes-projetos-api (recomendado via Docker Compose):
+docker compose up --build
 
-3️⃣ Acessar no navegador
-http://localhost:4200
+API: http://localhost:8080
 
+🧪 Testes
 
-⚠️ Importante:
-O proxy só funciona com ng serve.
-Não utilize ng build para testes locais de API.
+npm test
 
-📌 Observações Importantes
+🔐 Autenticação e segurança (resumo)
 
-Projeto utiliza Standalone Components (Angular moderno)
+Token JWT é armazenado no navegador e enviado automaticamente no header Authorization pelo jwt.interceptor.
 
-Não há NgModule
+Erros 401/403 são tratados globalmente pelo auth-error.interceptor, exibindo mensagem e redirecionando para /login quando necessário.
 
-Interceptors são registrados via provideHttpClient
+📁 Estrutura (resumo)
 
-Layout principal centralizado no MainLayoutComponent
+src/app/core/auth
+- auth.service.ts
+- auth.guard.ts
+- jwt.interceptor.ts
+- auth-error.interceptor.ts
 
-Código organizado para fácil evolução e manutenção
+src/app/core/projects
+- project.service.ts
 
-📚 Recursos Úteis
+src/app/layout
+- main-layout (toolbar, logout, router-outlet)
 
-Angular CLI
-https://angular.dev/tools/cli
+src/app/pages
+- login
+- register
+- projects (list/detail/form)
 
-Angular Material
-https://material.angular.io/
+✅ Considerações finais
 
-Angular Router
-https://angular.dev/guide/routing
+Este projeto busca entregar um frontend funcional e organizado, com:
+
+Integração limpa com a API
+
+Boa experiência de uso (filtros, paginação, feedback)
+
+Padrões de segurança básicos (JWT + proteção de rotas)
+
+Facilidade de manutenção e evolução

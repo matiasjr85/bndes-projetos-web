@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { map, finalize, catchError } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface LoginRequest {
   email: string;
   password: string;
 }
 export interface LoginResponse {
-  token: string;              
-  tokenType?: string;         
-  expiresInSeconds?: number;  
+  token: string;
+  tokenType?: string;
+  expiresInSeconds?: number;
 }
 export interface RegisterRequest {
   email: string;
@@ -26,8 +27,13 @@ export class AuthService {
     this.migrateLegacyTokenIfNeeded();
   }
 
+  private api(path: string): string {
+    const base = (environment.apiBaseUrl || '').replace(/\/$/, '');
+    return base ? `${base}${path}` : path;
+  }
+
   login(payload: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('/auth/login', payload).pipe(
+    return this.http.post<LoginResponse>(this.api('/auth/login'), payload).pipe(
       map((res) => {
         const normalized = this.normalizeToken(res.token, res.tokenType);
         this.setToken(normalized);
@@ -37,12 +43,23 @@ export class AuthService {
   }
 
   register(payload: RegisterRequest): Observable<any> {
-    return this.http.post('/auth/register', payload);
+    return this.http.post(this.api('/auth/register'), payload);
+  }
+
+  /**
+   * Logout chamando backend (blacklist) + limpa local mesmo se der erro.
+   * Se você não quiser chamar backend agora, use logout() direto.
+   */
+  logoutRemote(): Observable<void> {
+    return this.http.post<void>(this.api('/auth/logout'), {}).pipe(
+      catchError(() => of(void 0)),
+      finalize(() => this.logout())
+    );
   }
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    this.LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
+    this.LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
   }
 
   getToken(): string | null {
@@ -58,13 +75,18 @@ export class AuthService {
   }
 
   private normalizeToken(token: string, tokenType?: string): string {
-    if (!token) return token;
-    
-    if (token.toLowerCase().startsWith('bearer ')) {
-      return token.slice(7).trim();
+    const t = String(token || '').trim();
+    const type = String(tokenType || '').trim();
+
+    if (!t) return '';
+
+    if (t.toLowerCase().startsWith('bearer ')) return t;
+
+    if (type && type.toLowerCase() === 'bearer') {
+      return `Bearer ${t}`;
     }
-    
-    return token.trim();
+
+    return `Bearer ${t}`;
   }
 
   private migrateLegacyTokenIfNeeded(): void {
