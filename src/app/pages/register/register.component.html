@@ -4,35 +4,70 @@
 
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
-        <mat-form-field appearance="outline" class="full">
+        <!-- Email -->
+        <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
           <input matInput formControlName="email" autocomplete="email" />
+
+          <mat-error *ngIf="form.get('email')?.touched && form.get('email')?.errors as e">
+            <div *ngIf="e['required']">Email é obrigatório.</div>
+            <div *ngIf="e['email']">Email inválido.</div>
+          </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full">
+        <!-- Senha -->
+        <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Senha</mat-label>
           <input
             matInput
-            [type]="hidePassword ? 'password' : 'text'"
             formControlName="password"
+            [type]="hidePassword ? 'password' : 'text'"
             autocomplete="new-password"
           />
+
           <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
             <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
           </button>
+
+          <!-- 1 ÚNICO mat-error -->
+          <mat-error *ngIf="form.get('password')?.touched && form.get('password')?.errors as e">
+            <div *ngIf="e['required']">Senha é obrigatória.</div>
+            <div *ngIf="e['minlength']">A senha precisa ter no mínimo 8 caracteres.</div>
+            <div *ngIf="e['maxlength']">A senha precisa ter no máximo 72 caracteres.</div>
+            <div *ngIf="e['hasWhitespace']">A senha não pode conter espaços.</div>
+
+            <div *ngIf="e['noUppercase']">Inclua pelo menos 1 letra maiúscula.</div>
+            <div *ngIf="e['noLowercase']">Inclua pelo menos 1 letra minúscula.</div>
+            <div *ngIf="e['noNumber']">Inclua pelo menos 1 número.</div>
+            <div *ngIf="e['noSpecial']">
+              Inclua pelo menos 1 caractere especial (ex: !&#64;#).
+            </div>
+          </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full">
+        <!-- Confirmar senha -->
+        <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Confirmar senha</mat-label>
           <input
             matInput
-            [type]="hideConfirm ? 'password' : 'text'"
             formControlName="confirmPassword"
+            [type]="hideConfirm ? 'password' : 'text'"
             autocomplete="new-password"
           />
+
           <button mat-icon-button matSuffix type="button" (click)="hideConfirm = !hideConfirm">
             <mat-icon>{{ hideConfirm ? 'visibility' : 'visibility_off' }}</mat-icon>
           </button>
+
+          <mat-error
+            *ngIf="form.get('confirmPassword')?.touched && form.get('confirmPassword')?.hasError('required')"
+          >
+            Confirmação de senha é obrigatória.
+          </mat-error>
+
+          <mat-error *ngIf="form.get('confirmPassword')?.touched && form.hasError('passwordsMismatch')">
+            As senhas não coincidem.
+          </mat-error>
         </mat-form-field>
 
         <button mat-raised-button color="primary" class="full" type="submit" [disabled]="loading">
