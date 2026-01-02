@@ -57,7 +57,7 @@ API rodando em http://127.0.0.1:8080
 npm install
 
 2) Subir o frontend
-npm start
+ng serve
 
 Frontend: http://localhost:4200
 
@@ -68,9 +68,6 @@ docker compose up --build
 
 API: http://localhost:8080
 
-🧪 Testes
-
-npm test
 
 🔐 Autenticação e segurança (resumo)
 
