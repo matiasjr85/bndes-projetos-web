@@ -1,17 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
+
+import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { ProjectService } from '../../../core/projects/project.service';
-import { DateMaskDirective } from '../../../shared/directives/date-mask.directive';
 
 function dateRequiredValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -32,7 +42,11 @@ function validOptionalDateValidator(control: AbstractControl): ValidationErrors 
 function endDateAfterStartValidator(group: AbstractControl): ValidationErrors | null {
   const start = group.get('startDate')?.value as Date | null;
   const end = group.get('endDate')?.value as Date | null;
+
   if (!start || !end) return null;
+  if (!(start instanceof Date) || !(end instanceof Date)) return null;
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+
   if (end.getTime() < start.getTime()) return { endBeforeStart: true };
   return null;
 }
@@ -44,17 +58,20 @@ function endDateAfterStartValidator(group: AbstractControl): ValidationErrors | 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+
+    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatCheckboxModule,
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatIconModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule,
-    DateMaskDirective
+    MatProgressSpinnerModule
   ],
-  templateUrl: './project-form.component.html'
+  templateUrl: './project-form.component.html',
+  styleUrls: ['./project-form.component.scss']
 })
 export class ProjectFormComponent implements OnInit {
   form!: FormGroup;
@@ -67,7 +84,7 @@ export class ProjectFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private projectService: ProjectService,
-    private snack: MatSnackBar
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -93,98 +110,74 @@ export class ProjectFormComponent implements OnInit {
 
   private loadProject(id: number): void {
     this.loading = true;
-    this.projectService.getById(id).subscribe({
-      next: (p) => {
-        this.loading = false;
 
+    this.projectService.getById(id).subscribe({
+      next: (project) => {
+        // ajuste conforme o seu modelo real
         this.form.patchValue({
-          name: p.name,
-          description: p.description,
-          value: Number(p.value),
-          active: p.active,
-          startDate: this.parseYmdToDate(p.startDate),
-          endDate: p.endDate ? this.parseYmdToDate(p.endDate) : null
+          name: project.name,
+          description: project.description,
+          value: project.value,
+          active: project.active,
+          startDate: project.startDate ? new Date(project.startDate) : null,
+          endDate: project.endDate ? new Date(project.endDate) : null
         });
+        this.loading = false;
       },
       error: () => {
         this.loading = false;
-        this.snack.open('Falha ao carregar projeto.', 'OK', { duration: 3500 });
-        this.router.navigateByUrl('/projects');
+        this.snackBar.open('Não foi possível carregar o projeto.', 'Fechar', { duration: 3000 });
+        this.router.navigate(['/projects']);
       }
     });
   }
 
-  private parseYmdToDate(ymd: string): Date | null {
-    if (!ymd) return null;
-    const [y, m, d] = ymd.split('-').map((x) => Number(x));
-    if (!y || !m || !d) return null;
-    const dt = new Date(y, m - 1, d);
-    return isNaN(dt.getTime()) ? null : dt;
-  }
+  onSubmit(): void {
+    if (this.loading) return;
 
-  private toYmd(date: Date | null): string | null {
-    if (!date) return null;
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  get endBeforeStart(): boolean {
-    return !!this.form.errors?.['endBeforeStart'];
-  }
-
-  onCancel(): void {
-    this.router.navigateByUrl('/projects');
-  }
-
-  onSave(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.snack.open('Verifique os campos do formulário.', 'Fechar', { duration: 3500 });
+      this.snackBar.open('Verifique os campos do formulário.', 'Fechar', { duration: 3000 });
       return;
     }
 
-    const raw = this.form.getRawValue();
-
-    const payload = {
-      name: String(raw.name).trim(),
-      description: String(raw.description || '').trim(),
-      value: Number(raw.value),
-      active: !!raw.active,
-      startDate: this.toYmd(raw.startDate) as string,
-      endDate: this.toYmd(raw.endDate)
-    };
+    const payload = this.buildPayload();
 
     this.loading = true;
-    const request$ = this.isEdit && this.projectId
+
+    const req$ = this.isEdit && this.projectId != null
       ? this.projectService.update(this.projectId, payload)
       : this.projectService.create(payload);
 
-    request$.subscribe({
+    req$.subscribe({
       next: () => {
         this.loading = false;
-        this.snack.open('Projeto salvo com sucesso', 'OK', { duration: 2500 });
-        this.router.navigateByUrl('/projects');
+        this.snackBar.open('Projeto salvo com sucesso.', 'Fechar', { duration: 2500 });
+        this.router.navigate(['/projects']);
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
-
-        const msgFromApi =
-          err?.error?.message ||
-          err?.error?.details?.message ||
-          err?.message;
-
-        const httpStatus = err?.status;
-        const prefix =
-          httpStatus === 409 ? 'Conflito: ' :
-          httpStatus === 400 ? 'Validação: ' :
-          httpStatus === 403 ? 'Acesso negado: ' :
-          httpStatus === 401 ? 'Não autorizado: ' :
-          '';
-
-        this.snack.open(prefix + (msgFromApi || 'Falha ao salvar projeto.'), 'OK', { duration: 4500 });
+        this.snackBar.open('Não foi possível salvar o projeto.', 'Fechar', { duration: 3000 });
       }
     });
+  }
+
+  private buildPayload(): any {
+    const v = this.form.value;
+
+    // Mantém Date como Date aqui; se sua API espera string (yyyy-MM-dd),
+    // ajuste aqui para serializar.
+    return {
+      name: v.name,
+      description: v.description,
+      value: v.value,
+      active: v.active,
+      startDate: v.startDate,
+      endDate: v.endDate
+    };
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/projects']);
   }
 }

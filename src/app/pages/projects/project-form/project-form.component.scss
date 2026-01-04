@@ -1,18 +1,35 @@
+.page-card {
+  max-width: 1200px;
+  margin: 16px auto;
+}
+
 .project-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 14px;
 }
 
-.project-actions {
+/* garante que o mat-form-field NÃO encolha */
+.full {
+  width: 100%;
+}
+
+/* datas lado a lado em telas maiores, empilha no mobile */
+.dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.actions {
   display: flex;
-  gap: 12px;
   justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.project-loading {
-  display: flex;
-  justify-content: center;
-  padding: 12px;
+@media (max-width: 900px) {
+  .dates {
+    grid-template-columns: 1fr;
+  }
 }
