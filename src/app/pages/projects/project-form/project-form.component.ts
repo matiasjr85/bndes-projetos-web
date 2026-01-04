@@ -22,6 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { ProjectService } from '../../../core/projects/project.service';
+import { DateMaskDirective } from '../../../shared/directives/date-mask.directive';
 
 function dateRequiredValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -68,7 +69,9 @@ function endDateAfterStartValidator(group: AbstractControl): ValidationErrors | 
     MatNativeDateModule,
     MatIconModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+
+    DateMaskDirective
   ],
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss']
@@ -84,18 +87,18 @@ export class ProjectFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group(
       {
         name: ['', [Validators.required, Validators.maxLength(120)]],
-        description: ['', [Validators.maxLength(1000)]],
+        description: ['', [Validators.required, Validators.maxLength(1000)]],
         value: [null, [Validators.required, Validators.min(0)]],
         active: [true],
         startDate: [null, [dateRequiredValidator]],
-        endDate: [null, [validOptionalDateValidator]]
+        endDate: [null, [validOptionalDateValidator]],
       },
       { validators: [endDateAfterStartValidator] }
     );
@@ -108,76 +111,123 @@ export class ProjectFormComponent implements OnInit {
     }
   }
 
+  // ✅ usado no HTML
+  onSubmit(): void {
+    this.onSave();
+  }
+
+  onCancel(): void {
+    this.router.navigateByUrl('/projects');
+  }
+
+  get endBeforeStart(): boolean {
+    return !!this.form.errors?.['endBeforeStart'];
+  }
+
   private loadProject(id: number): void {
     this.loading = true;
 
     this.projectService.getById(id).subscribe({
-      next: (project) => {
-        // ajuste conforme o seu modelo real
-        this.form.patchValue({
-          name: project.name,
-          description: project.description,
-          value: project.value,
-          active: project.active,
-          startDate: project.startDate ? new Date(project.startDate) : null,
-          endDate: project.endDate ? new Date(project.endDate) : null
-        });
+      next: (p) => {
         this.loading = false;
+
+        this.form.patchValue({
+          name: p.name,
+          description: p.description,
+          value: Number(p.value),
+          active: p.active,
+
+          // ✅ API yyyy-MM-dd -> Date local (sem timezone bug)
+          startDate: this.parseYmdToDate(p.startDate),
+          endDate: p.endDate ? this.parseYmdToDate(p.endDate) : null
+        });
       },
       error: () => {
         this.loading = false;
-        this.snackBar.open('Não foi possível carregar o projeto.', 'Fechar', { duration: 3000 });
-        this.router.navigate(['/projects']);
+        this.snack.open('Falha ao carregar projeto.', 'OK', { duration: 3500 });
+        this.router.navigateByUrl('/projects');
       }
     });
   }
 
-  onSubmit(): void {
+  private parseYmdToDate(ymd: string): Date | null {
+    if (!ymd) return null;
+
+    // ymd esperado: yyyy-MM-dd
+    const parts = ymd.split('-');
+    if (parts.length !== 3) return null;
+
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+
+    if (!y || !m || !d) return null;
+
+    // ✅ Date local: evita virar "dia anterior" por timezone
+    const dt = new Date(y, m - 1, d);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private toYmd(date: Date | null): string | null {
+    if (!date) return null;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private onSave(): void {
     if (this.loading) return;
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.snackBar.open('Verifique os campos do formulário.', 'Fechar', { duration: 3000 });
+      this.snack.open('Verifique os campos do formulário.', 'Fechar', { duration: 3500 });
       return;
     }
 
-    const payload = this.buildPayload();
+    const raw = this.form.getRawValue();
+
+    // ✅ payload no formato que o backend espera: yyyy-MM-dd
+    const payload = {
+      name: String(raw.name).trim(),
+      description: String(raw.description || '').trim(),
+      value: Number(raw.value),
+      active: !!raw.active,
+      startDate: this.toYmd(raw.startDate) as string,
+      endDate: this.toYmd(raw.endDate)
+    };
 
     this.loading = true;
 
-    const req$ = this.isEdit && this.projectId != null
-      ? this.projectService.update(this.projectId, payload)
-      : this.projectService.create(payload);
+    const request$ =
+      this.isEdit && this.projectId
+        ? this.projectService.update(this.projectId, payload)
+        : this.projectService.create(payload);
 
-    req$.subscribe({
+    request$.subscribe({
       next: () => {
         this.loading = false;
-        this.snackBar.open('Projeto salvo com sucesso.', 'Fechar', { duration: 2500 });
-        this.router.navigate(['/projects']);
+        this.snack.open('Projeto salvo com sucesso.', 'OK', { duration: 2500 });
+        this.router.navigateByUrl('/projects');
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.snackBar.open('Não foi possível salvar o projeto.', 'Fechar', { duration: 3000 });
+
+        const msgFromApi =
+          err?.error?.message ||
+          err?.error?.details?.message ||
+          err?.message;
+
+        const httpStatus = err?.status;
+        const prefix =
+          httpStatus === 409 ? 'Conflito: ' :
+          httpStatus === 400 ? 'Validação: ' :
+          httpStatus === 403 ? 'Acesso negado: ' :
+          httpStatus === 401 ? 'Não autorizado: ' :
+          '';
+
+        this.snack.open(prefix + (msgFromApi || 'Falha ao salvar projeto.'), 'OK', { duration: 4500 });
       }
     });
-  }
-
-  private buildPayload(): any {
-    const v = this.form.value;
-
-    // Mantém Date como Date aqui; se sua API espera string (yyyy-MM-dd),
-    // ajuste aqui para serializar.
-    return {
-      name: v.name,
-      description: v.description,
-      value: v.value,
-      active: v.active,
-      startDate: v.startDate,
-      endDate: v.endDate
-    };
-  }
-
-  onCancel(): void {
-    this.router.navigate(['/projects']);
   }
 }

@@ -1,75 +1,97 @@
-import { Directive, HostListener, Optional } from '@angular/core';
+import { Directive, ElementRef, HostListener, Optional } from '@angular/core';
 import { NgControl } from '@angular/forms';
 
-/**
- * Máscara simples para datas no formato dd/MM/yyyy.
- *
- * Importante: além de formatar o input, esta diretiva também
- * converte a entrada (quando completa) em um objeto Date no FormControl.
- * Assim, o MatDatepicker + validators funcionam corretamente mesmo quando
- * o usuário digita a data.
- */
 @Directive({
   selector: '[appDateMask]',
-  standalone: true
+  standalone: true,
 })
 export class DateMaskDirective {
-  constructor(@Optional() private ngControl: NgControl) {}
+  private readonly MAX_DIGITS = 8; // ddMMyyyy
+  private readonly MAX_LEN = 10;   // dd/MM/yyyy
 
-  private format(digits: string): string {
-    const d = digits.slice(0, 2);
-    const m = digits.slice(2, 4);
-    const y = digits.slice(4, 8);
+  constructor(
+    private el: ElementRef<HTMLInputElement>,
+    @Optional() private ngControl: NgControl
+  ) {}
 
-    let out = d;
-    if (m) out += `/${m}`;
-    if (y) out += `/${y}`;
-    return out;
+  // ✅ bloqueia letras e mantém navegação/atalhos
+  @HostListener('keydown', ['$event'])
+  onKeyDown(e: KeyboardEvent) {
+    const allowed = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+      'ArrowLeft', 'ArrowRight', 'Home', 'End'
+    ];
+
+    if (allowed.includes(e.key)) return;
+
+    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
+
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+
+    const input = this.el.nativeElement;
+    if (input.value.length >= this.MAX_LEN) e.preventDefault();
   }
 
-  private parseDdMmYyyy(digits: string): Date | null {
-    if (digits.length !== 8) return null;
+  @HostListener('paste', ['$event'])
+  onPaste(e: ClipboardEvent) {
+    e.preventDefault();
+    const pasted = e.clipboardData?.getData('text') ?? '';
+    const digits = pasted.replace(/\D/g, '').slice(0, this.MAX_DIGITS);
+    const masked = this.applyMask(digits);
 
-    const day = Number(digits.slice(0, 2));
-    const month = Number(digits.slice(2, 4));
-    const year = Number(digits.slice(4, 8));
+    const input = this.el.nativeElement;
+    input.value = masked;
 
-    if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return null;
-    if (year < 1900 || year > 2200) return null;
-    if (month < 1 || month > 12) return null;
-    if (day < 1 || day > 31) return null;
-
-    const date = new Date(year, month - 1, day);
-
-    // valida "roundtrip" (ex.: 31/02 vira março -> inválido)
-    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
-
-    return date;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  @HostListener('input', ['$event'])
-  onInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const digits = input.value.replace(/\D/g, '').slice(0, 8);
+  @HostListener('input')
+  onInput() {
+    const input = this.el.nativeElement;
+    const digits = (input.value || '').replace(/\D/g, '').slice(0, this.MAX_DIGITS);
 
-    // exibe sempre com máscara
-    input.value = this.format(digits);
+    input.value = this.applyMask(digits).slice(0, this.MAX_LEN);
 
     const control = this.ngControl?.control;
     if (!control) return;
 
+    // ✅ se limpou, zera de verdade
     if (digits.length === 0) {
       control.setValue(null, { emitEvent: true });
       return;
     }
 
-    if (digits.length < 8) {
-      // ainda incompleto -> consideramos inválido e mantemos null
-      control.setValue(null, { emitEvent: true });
-      return;
+    // ✅ só seta Date quando COMPLETO
+    if (digits.length === 8) {
+      const parsed = this.parseDdMmYyyy(digits);
+      control.setValue(parsed, { emitEvent: true });
     }
+    // ✅ se incompleto: NÃO mexe no valor do control (evita “autocompletes”/trocas)
+  }
 
-    const parsed = this.parseDdMmYyyy(digits);
-    control.setValue(parsed, { emitEvent: true });
+  private applyMask(digits: string): string {
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  }
+
+  private parseDdMmYyyy(digits: string): Date | null {
+    const day = Number(digits.slice(0, 2));
+    const month = Number(digits.slice(2, 4));
+    const year = Number(digits.slice(4, 8));
+
+    if (year < 1900 || year > 2200) return null;
+    if (month < 1 || month > 12) return null;
+    if (day < 1 || day > 31) return null;
+
+    const d = new Date(year, month - 1, day);
+
+    // roundtrip (31/02 etc)
+    if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+
+    return d;
   }
 }

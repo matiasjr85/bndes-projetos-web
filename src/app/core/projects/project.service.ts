@@ -9,10 +9,22 @@ export interface Project {
   description: string;
   value: number | string;
   active: boolean;
+
+  // API sempre em yyyy-MM-dd
   startDate: string;
   endDate: string | null;
+
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProjectPayload {
+  name: string;
+  description?: string;
+  value: number;
+  active: boolean;
+  startDate: string;        // yyyy-MM-dd
+  endDate?: string | null;  // yyyy-MM-dd | null
 }
 
 export interface PageResponse<T> {
@@ -64,11 +76,11 @@ export class ProjectService {
     return this.http.get<Project>(this.api(`/projects/${id}`));
   }
 
-  create(payload: Partial<Project>): Observable<Project> {
+  create(payload: ProjectPayload): Observable<Project> {
     return this.http.post<Project>(this.api('/projects'), payload);
   }
 
-  update(id: number, payload: Partial<Project>): Observable<Project> {
+  update(id: number, payload: ProjectPayload): Observable<Project> {
     return this.http.put<Project>(this.api(`/projects/${id}`), payload);
   }
 
