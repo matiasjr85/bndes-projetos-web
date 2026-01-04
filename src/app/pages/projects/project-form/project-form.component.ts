@@ -75,7 +75,7 @@ export class ProjectFormComponent implements OnInit {
       {
         name: ['', [Validators.required, Validators.maxLength(120)]],
         description: ['', [Validators.maxLength(1000)]],
-        value: [0, [Validators.required, Validators.min(0)]],
+        value: [null, [Validators.required, Validators.min(0)]],
         active: [true],
         startDate: [null, [dateRequiredValidator]],
         endDate: [null, [validOptionalDateValidator]]

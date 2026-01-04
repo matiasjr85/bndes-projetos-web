@@ -1,24 +1,46 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
-export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.getToken();
+@Injectable()
+export class JwtInterceptor implements HttpInterceptor {
 
-  // não adiciona token nos endpoints de auth
-  const isAuthEndpoint = req.url.includes('/auth/login')
-    || req.url.includes('/auth/register')
-    || req.url.includes('/auth/refresh');
+  private readonly PUBLIC_ENDPOINTS = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/refresh'
+  ];
 
-  if (!token || isAuthEndpoint) {
-    return next(req);
+  constructor(private authService: AuthService) {}
+
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+    if (this.isPublicEndpoint(req.url)) {
+      return next.handle(req);
+    }
+
+    const token = this.authService.getToken();
+
+    if (!token) {
+      return next.handle(req);
+    }
+
+    const authReq = req.clone({
+      setHeaders: {
+        Authorization: token
+      }
+    });
+
+    return next.handle(authReq);
   }
 
-  const cloned = req.clone({
-    setHeaders: { Authorization: `Bearer ${token}` },
-    withCredentials: true,
-  });
-
-  return next(cloned);
-};
+  private isPublicEndpoint(url: string): boolean {
+    return this.PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+  }
+}

@@ -17,27 +17,19 @@
 
     <mat-form-field appearance="outline" class="full">
       <mat-label>Valor</mat-label>
-      <input matInput type="number" formControlName="value" />
+      <input matInput type="number" formControlName="value" min="0.01" step="0.01" />
       <mat-error *ngIf="form.get('value')?.hasError('required')">Informe o valor</mat-error>
       <mat-error *ngIf="form.get('value')?.hasError('min')">Valor não pode ser negativo</mat-error>
     </mat-form-field>
 
     <mat-checkbox formControlName="active">Ativo</mat-checkbox>
 
-    <mat-form-field appearance="outline" class="full">
-      <mat-label>Data de início</mat-label>
-      <input
-        matInput
-        [matDatepicker]="pickerStart"
-        formControlName="startDate"
-        appDateMask
-        placeholder="dd/MM/aaaa"
-      />
-      <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
-      <mat-datepicker #pickerStart></mat-datepicker>
-      <mat-error *ngIf="form.get('startDate')?.hasError('required')">Informe a data de início</mat-error>
-      <mat-error *ngIf="form.get('startDate')?.hasError('invalidDate')">Data inválida</mat-error>
-    </mat-form-field>
+    <mat-form-field appearance="outline" class="w-100">
+  <mat-label>Data de início</mat-label>
+  <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd/MM/aaaa">
+  <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+  <mat-datepicker #startPicker></mat-datepicker>
+</mat-form-field>
 
     <mat-form-field appearance="outline" class="full">
       <mat-label>Data de fim (opcional)</mat-label>

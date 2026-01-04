@@ -1,53 +1,47 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
-export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-  const snack = inject(MatSnackBar);
+@Injectable()
+export class AuthErrorInterceptor implements HttpInterceptor {
 
-  const isAuthEndpoint =
-    req.url.includes('/auth/login') ||
-    req.url.includes('/auth/register') ||
-    req.url.includes('/auth/refresh');
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
-  return next(req).pipe(
-    catchError((err: unknown) => {
-      if (!(err instanceof HttpErrorResponse)) {
-        return throwError(() => err);
-      }
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-      const apiMessage =
-        err.error?.message ||
-        err.error?.error ||
-        err.message ||
-        'Erro inesperado.';
+    return next.handle(req).pipe(
+      catchError((error: HttpErrorResponse) => {
 
-      // 401 fora dos endpoints de auth: expiração/revogação -> força login
-      if (err.status === 401 && !isAuthEndpoint) {
-        auth.logout();
-        snack.open(apiMessage || 'Sessão expirada. Faça login novamente.', 'OK', { duration: 4000 });
-        router.navigateByUrl('/login');
-        return throwError(() => err);
-      }
+        // 👉 erro no login NÃO dispara logout
+        if (req.url.includes('/auth/login')) {
+          return throwError(() => error);
+        }
 
-      // 403: acesso negado
-      if (err.status === 403) {
-        snack.open(apiMessage || 'Acesso negado.', 'OK', { duration: 4000 });
-        return throwError(() => err);
-      }
+        if (error.status === 401 && this.authService.isLoggedIn()) {
+          this.authService.logout();
+          this.router.navigate(['/login'], {
+            queryParams: { reason: 'expired' }
+          });
+        }
 
-      // 400/409: validação / conflito (deixa o componente tratar também, mas já dá feedback)
-      if (err.status === 400 || err.status === 409) {
-        snack.open(apiMessage, 'OK', { duration: 4500 });
-        return throwError(() => err);
-      }
+        if (error.status === 403) {
+          alert('Acesso negado.');
+        }
 
-      return throwError(() => err);
-    })
-  );
-};
+        return throwError(() => error);
+      })
+    );
+  }
+}

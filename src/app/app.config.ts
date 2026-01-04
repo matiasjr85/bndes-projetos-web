@@ -1,14 +1,15 @@
 import { ApplicationConfig, importProvidersFrom, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 
 import { routes } from './app.routes';
-import { jwtInterceptor } from './core/auth/jwt.interceptor';
-import { authErrorInterceptor } from './core/auth/auth-error.interceptor';
+
+import { JwtInterceptor } from './core/auth/jwt.interceptor';
+import { AuthErrorInterceptor } from './core/auth/auth-error.interceptor';
 
 import { PtBrDateAdapter } from './shared/date-adapters/pt-br-date-adapter';
 
@@ -35,6 +36,11 @@ export const appConfig: ApplicationConfig = {
 
     importProvidersFrom(MatSnackBarModule),
 
-    provideHttpClient(withInterceptors([jwtInterceptor, authErrorInterceptor])),
+    // 👇 HttpClient puxa interceptors do DI
+    provideHttpClient(withInterceptorsFromDi()),
+
+    // 👇 Interceptors registrados no DI (ordem importa)
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthErrorInterceptor, multi: true },
   ],
 };
