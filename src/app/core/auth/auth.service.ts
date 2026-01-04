@@ -1,105 +1,121 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map, finalize, catchError } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Observable, map, tap } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
   password: string;
 }
-export interface LoginResponse {
-  token: string;
-  tokenType?: string;
-  expiresInSeconds?: number;
-}
+
 export interface RegisterRequest {
   email: string;
   password: string;
 }
 
+// Ajuste os nomes se seu backend devolver diferente
+export interface LoginResponseBody {
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string; // "Bearer"
+  expiresInSeconds?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly TOKEN_KEY = 'token';
-  private readonly LEGACY_KEYS = ['bndes_token'];
+  private readonly ACCESS_TOKEN_KEY = 'bndes_token';
+  private readonly REFRESH_TOKEN_KEY = 'bndes_refresh_token';
 
-  constructor(private http: HttpClient) {
-    this.migrateLegacyTokenIfNeeded();
-  }
+  constructor(private http: HttpClient) {}
 
-  private api(path: string): string {
-    const base = (environment.apiBaseUrl || '').replace(/\/$/, '');
-    return base ? `${base}${path}` : path;
-  }
-
-  login(payload: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.api('/auth/login'), payload).pipe(
-      map((res) => {
-        const normalized = this.normalizeToken(res.token, res.tokenType);
-        this.setToken(normalized);
-        return res;
-      })
-    );
-  }
-
-  register(payload: RegisterRequest): Observable<any> {
-    return this.http.post(this.api('/auth/register'), payload);
-  }
-
-  /**
-   * Logout chamando backend (blacklist) + limpa local mesmo se der erro.
-   * Se você não quiser chamar backend agora, use logout() direto.
-   */
-  logoutRemote(): Observable<void> {
-    return this.http.post<void>(this.api('/auth/logout'), {}).pipe(
-      catchError(() => of(void 0)),
-      finalize(() => this.logout())
-    );
-  }
-
-  logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    this.LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
-  }
-
+  /** usado pelo interceptor */
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
-  isAuthenticated(): boolean {
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+  }
+
+  isLoggedIn(): boolean {
     return !!this.getToken();
   }
 
-  private setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+  /** limpa tokens (inclui chaves antigas que podem estar te sabotando) */
+  clearTokens(): void {
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+
+    // chaves antigas que vi no seu print (pra não confundir guard/interceptor)
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
   }
 
-  private normalizeToken(token: string, tokenType?: string): string {
-    const t = String(token || '').trim();
-    const type = String(tokenType || '').trim();
-
-    if (!t) return '';
-
-    if (t.toLowerCase().startsWith('bearer ')) return t;
-
-    if (type && type.toLowerCase() === 'bearer') {
-      return `Bearer ${t}`;
-    }
-
-    return `Bearer ${t}`;
+  login(payload: LoginRequest): Observable<void> {
+    // Observe a response pra conseguir ler header Authorization se existir
+    return this.http
+      .post<LoginResponseBody>('/api/auth/login', payload, { observe: 'response' })
+      .pipe(
+        tap((res) => this.persistTokensFromLogin(res)),
+        map(() => void 0)
+      );
   }
 
-  private migrateLegacyTokenIfNeeded(): void {
-    const current = localStorage.getItem(this.TOKEN_KEY);
-    if (current) return;
+  register(payload: RegisterRequest): Observable<void> {
+    return this.http.post<void>('/api/auth/register', payload);
+  }
 
-    for (const key of this.LEGACY_KEYS) {
-      const legacy = localStorage.getItem(key);
-      if (legacy) {
-        localStorage.setItem(this.TOKEN_KEY, legacy);
-        localStorage.removeItem(key);
-        break;
-      }
+  refresh(): Observable<void> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      // sem refresh token -> força relogar
+      this.clearTokens();
+      return new Observable<void>((sub) => {
+        sub.error(new Error('Missing refresh token'));
+      });
     }
+
+    return this.http
+      .post<LoginResponseBody>('/api/auth/refresh', { refreshToken }, { observe: 'response' })
+      .pipe(
+        tap((res) => this.persistTokensFromLogin(res)),
+        map(() => void 0)
+      );
+  }
+
+  /** logout local (UX) */
+  logout(): void {
+    this.clearTokens();
+  }
+
+  /** logout no backend (blacklist/revogação). Mantém UX mesmo se falhar */
+  logoutRemote(): Observable<void> {
+    const refreshToken = this.getRefreshToken();
+
+    // alguns backends exigem refreshToken no body; outros só Authorization header
+    return this.http.post<void>('/api/auth/logout', refreshToken ? { refreshToken } : {});
+  }
+
+  private persistTokensFromLogin(res: HttpResponse<LoginResponseBody>): void {
+    // 1) tenta pegar do header Authorization: "Bearer <jwt>"
+    const authHeader = res.headers.get('Authorization') || res.headers.get('authorization');
+
+    let accessToken: string | undefined;
+
+    if (authHeader) {
+      accessToken = authHeader.startsWith('Bearer ')
+        ? authHeader.substring('Bearer '.length).trim()
+        : authHeader.trim();
+    } else {
+      // 2) ou do body (accessToken)
+      accessToken = res.body?.accessToken;
+    }
+
+    const refreshToken = res.body?.refreshToken;
+
+    if (accessToken) localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
+    if (refreshToken) localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+
+    // remove chaves antigas pra não te jogar de volta pro login
+    localStorage.removeItem('token');
   }
 }

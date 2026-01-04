@@ -1,35 +1,53 @@
-<mat-card>
+<mat-card class="project-detail-card">
   <mat-card-title>Detalhe do Projeto</mat-card-title>
 
   <mat-card-content>
-    <div *ngIf="loading" style="display:flex; justify-content:center; padding:16px;">
+    <div *ngIf="loading" class="project-detail__loading" aria-live="polite">
       <mat-spinner diameter="32"></mat-spinner>
     </div>
 
-    <div *ngIf="!loading && project" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
-      <div><strong>ID:</strong> {{ project.id }}</div>
-      <div><strong>Nome:</strong> {{ project.name }}</div>
-      <div><strong>Descrição:</strong> {{ project.description }}</div>
-      <div><strong>Valor:</strong> {{ project.value }}</div>
-      <div><strong>Ativo:</strong> {{ project.active ? 'Sim' : 'Não' }}</div>
-      <div><strong>Início:</strong> {{ project.startDate }}</div>
-      <div><strong>Fim:</strong> {{ project.endDate }}</div>
+    <div *ngIf="!loading && project" class="project-detail__content">
+      <div class="project-detail__row"><strong>ID:</strong> {{ project.id }}</div>
+      <div class="project-detail__row"><strong>Nome:</strong> {{ project.name }}</div>
+      <div class="project-detail__row"><strong>Descrição:</strong> {{ project.description }}</div>
 
-      <div style="margin-top:8px; font-size: 12px; opacity: 0.8;">
-        <div><strong>Criado em:</strong> {{ project.createdAt }}</div>
-        <div><strong>Atualizado em:</strong> {{ project.updatedAt }}</div>
+      <div class="project-detail__row">
+        <strong>Valor:</strong>
+        {{ project.value | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+      </div>
+
+      <div class="project-detail__row"><strong>Ativo:</strong> {{ project.active ? 'Sim' : 'Não' }}</div>
+
+      <div class="project-detail__row">
+        <strong>Início:</strong>
+        {{ project.startDate | date:'dd/MM/yyyy':undefined:'pt-BR' }}
+      </div>
+
+      <div class="project-detail__row">
+        <strong>Fim:</strong>
+        {{ project.endDate ? (project.endDate | date:'dd/MM/yyyy':undefined:'pt-BR') : '-' }}
+      </div>
+
+      <div class="project-detail__meta">
+        <div class="project-detail__row">
+          <strong>Criado em:</strong>
+          {{ project.createdAt ? (project.createdAt | date:'dd/MM/yyyy HH:mm':undefined:'pt-BR') : '-' }}
+        </div>
+
+        <div class="project-detail__row">
+          <strong>Atualizado em:</strong>
+          {{ project.updatedAt ? (project.updatedAt | date:'dd/MM/yyyy HH:mm':undefined:'pt-BR') : '-' }}
+        </div>
       </div>
     </div>
 
-    <div *ngIf="!loading && !project" style="padding:12px;">
+    <div *ngIf="!loading && !project" class="project-detail__notfound">
       Projeto não encontrado.
     </div>
   </mat-card-content>
 
-  <mat-card-actions style="display:flex; gap:12px; justify-content:flex-end;">
-    <button mat-button (click)="back()" [disabled]="loading">
-      Voltar
-    </button>
+  <mat-card-actions class="project-detail__actions">
+    <button mat-button (click)="back()" [disabled]="loading">Voltar</button>
 
     <button mat-raised-button color="primary" (click)="edit()" [disabled]="loading || !project">
       <mat-icon>edit</mat-icon>

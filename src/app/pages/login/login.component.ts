@@ -1,19 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth/auth.service';
+
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule, 
+    RouterModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -26,11 +27,13 @@ import { AuthService } from '../../core/auth/auth.service';
 })
 export class LoginComponent implements OnInit {
   form!: FormGroup;
+  private returnUrl = '/projects';
 
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private snack: MatSnackBar
   ) {}
 
@@ -39,6 +42,16 @@ export class LoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
     });
+
+    const rawReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.returnUrl = this.sanitizeReturnUrl(rawReturnUrl) || '/projects';
+
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'expired') {
+      this.snack.open('Sua sessão expirou. Faça login novamente.', 'Fechar', {
+        duration: 3500,
+      });
+    }
   }
 
   onSubmit(): void {
@@ -50,9 +63,20 @@ export class LoginComponent implements OnInit {
 
     const { email, password } = this.form.value;
 
-    this.auth.login({ email, password }).subscribe({
-      next: () => this.router.navigateByUrl('/projects'),
-      error: () => this.snack.open('Falha no login. Verifique suas credenciais.', 'Fechar', { duration: 3000 }),
+    this.auth.login(this.form.value).subscribe({
+      next: () => this.router.navigate(['/projects']),
+      error: (err) => { /* snackbar */ }
     });
+  }
+  
+  private sanitizeReturnUrl(value: string | null): string | null {
+    if (!value) return null;
+
+    const trimmed = value.trim();
+    
+    if (/^([a-zA-Z][a-zA-Z0-9+.-]*:)?\/\//.test(trimmed)) return null;
+    if (!trimmed.startsWith('/')) return null;
+
+    return trimmed;
   }
 }

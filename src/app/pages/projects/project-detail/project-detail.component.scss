@@ -1,0 +1,32 @@
+.project-detail__loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.project-detail__content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.project-detail__row {
+  line-height: 1.4;
+}
+
+.project-detail__meta {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.project-detail__notfound {
+  padding: 12px;
+}
+
+.project-detail__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}

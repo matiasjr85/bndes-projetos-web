@@ -2,22 +2,22 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
 
-export const jwtInterceptor: HttpInterceptorFn = (req, next) => {  
-  if (req.url.includes('/auth/login') || req.url.includes('/auth/register')) {
-    return next(req);
-  }
-
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.getToken();
 
-  if (!token) return next(req);
-  
-  const cleanToken = token.toLowerCase().startsWith('bearer ')
-    ? token.slice(7).trim()
-    : token.trim();
+  // não adiciona token nos endpoints de auth
+  const isAuthEndpoint = req.url.includes('/auth/login')
+    || req.url.includes('/auth/register')
+    || req.url.includes('/auth/refresh');
+
+  if (!token || isAuthEndpoint) {
+    return next(req);
+  }
 
   const cloned = req.clone({
-    setHeaders: { Authorization: `Bearer ${cleanToken}` },
+    setHeaders: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
   });
 
   return next(cloned);

@@ -1,56 +1,69 @@
-<mat-card>
-  <mat-card-title>{{ isEdit ? 'Editar Projeto' : 'Novo Projeto' }}</mat-card-title>
-
-  <mat-card-content>
-    <form [formGroup]="form" class="project-form">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Nome</mat-label>
-        <input matInput formControlName="name" />
-        <mat-error *ngIf="form.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
-        <mat-error *ngIf="form.get('name')?.hasError('minlength')">Mínimo 3 caracteres</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Descrição</mat-label>
-        <textarea matInput rows="3" formControlName="description"></textarea>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Valor</mat-label>
-        <input matInput type="number" formControlName="value" />
-        <mat-error *ngIf="form.get('value')?.hasError('required')">Valor é obrigatório</mat-error>
-        <mat-error *ngIf="form.get('value')?.hasError('min')">Valor não pode ser negativo</mat-error>
-      </mat-form-field>
-
-      <mat-checkbox formControlName="active">Ativo</mat-checkbox>
-
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Data de início</mat-label>
-        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-        <mat-error *ngIf="form.get('startDate')?.hasError('required')">Data de início é obrigatória</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Data de fim (opcional)</mat-label>
-        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-      </mat-form-field>
-    </form>
-  </mat-card-content>
-
-  <mat-card-actions class="project-actions">
-    <button mat-button (click)="cancel()" [disabled]="loading">Cancelar</button>
-
-    <button mat-raised-button color="primary" (click)="save()" [disabled]="loading">
-      <mat-icon>save</mat-icon>
-      Salvar
-    </button>
-  </mat-card-actions>
-
-  <div *ngIf="loading" class="project-loading">
-    <mat-spinner diameter="32"></mat-spinner>
+<div class="page">
+  <div class="header">
+    <h2>{{ isEdit ? 'Editar Projeto' : 'Novo Projeto' }}</h2>
   </div>
-</mat-card>
+
+  <form [formGroup]="form" (ngSubmit)="onSave()">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Nome *</mat-label>
+      <input matInput formControlName="name" maxlength="120" />
+      <mat-error *ngIf="form.get('name')?.hasError('required')">Informe o nome</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Descrição</mat-label>
+      <textarea matInput formControlName="description" rows="4" maxlength="1000"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Valor</mat-label>
+      <input matInput type="number" formControlName="value" />
+      <mat-error *ngIf="form.get('value')?.hasError('required')">Informe o valor</mat-error>
+      <mat-error *ngIf="form.get('value')?.hasError('min')">Valor não pode ser negativo</mat-error>
+    </mat-form-field>
+
+    <mat-checkbox formControlName="active">Ativo</mat-checkbox>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Data de início</mat-label>
+      <input
+        matInput
+        [matDatepicker]="pickerStart"
+        formControlName="startDate"
+        appDateMask
+        placeholder="dd/MM/aaaa"
+      />
+      <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+      <mat-datepicker #pickerStart></mat-datepicker>
+      <mat-error *ngIf="form.get('startDate')?.hasError('required')">Informe a data de início</mat-error>
+      <mat-error *ngIf="form.get('startDate')?.hasError('invalidDate')">Data inválida</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Data de fim (opcional)</mat-label>
+      <input
+        matInput
+        [matDatepicker]="pickerEnd"
+        formControlName="endDate"
+        appDateMask
+        placeholder="dd/MM/aaaa"
+      />
+      <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+      <mat-datepicker #pickerEnd></mat-datepicker>
+      <mat-error *ngIf="form.get('endDate')?.hasError('invalidDate')">Data inválida</mat-error>
+      <mat-error *ngIf="endBeforeStart">Data de fim não pode ser menor que a data de início</mat-error>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="loading">Cancelar</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="loading">
+        <span *ngIf="!loading">Salvar</span>
+        <mat-progress-spinner
+          *ngIf="loading"
+          mode="indeterminate"
+          diameter="18"
+        ></mat-progress-spinner>
+      </button>
+    </div>
+  </form>
+</div>

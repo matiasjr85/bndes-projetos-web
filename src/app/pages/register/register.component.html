@@ -3,8 +3,7 @@
     <mat-card-title class="login-title">Cadastro</mat-card-title>
 
     <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
-        <!-- Email -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">        
         <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
           <input matInput formControlName="email" autocomplete="email" />
@@ -14,8 +13,7 @@
             <div *ngIf="e['email']">Email inválido.</div>
           </mat-error>
         </mat-form-field>
-
-        <!-- Senha -->
+        
         <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Senha</mat-label>
           <input
@@ -28,8 +26,7 @@
           <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
             <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
           </button>
-
-          <!-- 1 ÚNICO mat-error -->
+          
           <mat-error *ngIf="form.get('password')?.touched && form.get('password')?.errors as e">
             <div *ngIf="e['required']">Senha é obrigatória.</div>
             <div *ngIf="e['minlength']">A senha precisa ter no mínimo 8 caracteres.</div>
@@ -44,8 +41,7 @@
             </div>
           </mat-error>
         </mat-form-field>
-
-        <!-- Confirmar senha -->
+        
         <mat-form-field class="full" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Confirmar senha</mat-label>
           <input

@@ -1,21 +1,15 @@
-<header *ngIf="isAuthenticated">
-  <mat-toolbar color="primary" role="banner">
-    <span class="brand">BNDES Projetos</span>
+<mat-toolbar color="primary">
+  <span style="font-weight: 600;">BNDES Projetos</span>
+  <span style="flex: 1 1 auto;"></span>
 
-    <span class="spacer"></span>
+  <button mat-button (click)="logout()">
+    <span style="display:flex; align-items:center; gap:6px;">
+      <span>↪</span>
+      <span>Sair</span>
+    </span>
+  </button>
+</mat-toolbar>
 
-    <button
-      mat-button
-      type="button"
-      (click)="logout()"
-      aria-label="Sair (logout)"
-    >
-      <mat-icon>logout</mat-icon>
-      Sair
-    </button>
-  </mat-toolbar>
-</header>
-
-<main class="app-content" role="main">
+<div style="padding: 16px;">
   <router-outlet></router-outlet>
-</main>
+</div>

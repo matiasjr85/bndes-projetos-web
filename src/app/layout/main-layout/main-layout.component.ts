@@ -1,29 +1,25 @@
 import { Component } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, NgIf, MatToolbarModule, MatButtonModule, MatIconModule],
-  templateUrl: './main-layout.component.html',
-  styleUrls: ['./main-layout.component.scss'],
+  imports: [CommonModule, RouterModule, MatToolbarModule, MatButtonModule],
+  templateUrl: './main-layout.component.html'
 })
 export class MainLayoutComponent {
   constructor(private auth: AuthService, private router: Router) {}
 
-  get isAuthenticated(): boolean {
-    return this.auth.isAuthenticated();
-  }
-
   logout(): void {
-    // chama backend (blacklist) e limpa local mesmo se falhar
-    this.auth.logoutRemote().subscribe(() => {
-      this.router.navigateByUrl('/login');
-    });
+    // 1) Remove token local imediatamente (UX)
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
+
+    // 2) Tenta invalidar tokens no backend (blacklist/revogação)
+    this.auth.logoutRemote().subscribe({ error: () => {} });
   }
 }

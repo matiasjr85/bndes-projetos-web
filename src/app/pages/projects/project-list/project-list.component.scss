@@ -1,4 +1,3 @@
-/* Espaçamento do título e botão, abaixo da barra verde */
 .projects-header {
   display: flex;
   align-items: center;
@@ -13,12 +12,10 @@
   font-weight: 500;
 }
 
-/* Ajusta o botão "Novo" */
 .projects-new-btn {
   height: 40px;
 }
 
-/* Linha de filtros */
 .projects-filters {
   display: flex;
   gap: 12px;
@@ -35,7 +32,6 @@
   width: 220px;
 }
 
-/* Wrapper para tabela no mobile */
 .projects-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -43,16 +39,14 @@
 
 .projects-table-wrapper table {
   width: 100%;
-  min-width: 900px;  /* só para telas pequenas; em desktop ocupa 100% mesmo */
+  min-width: 900px;  
 }
 
-/* Ações */
 .projects-actions {
   display: flex;
   gap: 6px;
 }
 
-/* Mobile */
 @media (max-width: 992px) {
   .projects-header {
     flex-direction: column;
