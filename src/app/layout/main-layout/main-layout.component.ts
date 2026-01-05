@@ -14,12 +14,10 @@ import { AuthService } from '../../core/auth/auth.service';
 export class MainLayoutComponent {
   constructor(private auth: AuthService, private router: Router) {}
 
-  logout(): void {
-    // 1) Remove token local imediatamente (UX)
+  logout(): void {    
     this.auth.logout();
     this.router.navigateByUrl('/login');
-
-    // 2) Tenta invalidar tokens no backend (blacklist/revogação)
+    
     this.auth.logoutRemote().subscribe({ error: () => {} });
   }
 }

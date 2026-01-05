@@ -9,8 +9,7 @@ export interface Project {
   description: string;
   value: number | string;
   active: boolean;
-
-  // API sempre em yyyy-MM-dd
+  
   startDate: string;
   endDate: string | null;
 
@@ -23,8 +22,8 @@ export interface ProjectPayload {
   description?: string;
   value: number;
   active: boolean;
-  startDate: string;        // yyyy-MM-dd
-  endDate?: string | null;  // yyyy-MM-dd | null
+  startDate: string;        
+  endDate?: string | null;  
 }
 
 export interface PageResponse<T> {

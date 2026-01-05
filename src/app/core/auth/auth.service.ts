@@ -13,8 +13,7 @@ export interface LoginResponse {
   token: string;
   tokenType?: string;
   expiresInSeconds?: number;
-
-  // backend também pode devolver (se já existir no seu)
+  
   refreshToken?: string;
   refreshExpiresInSeconds?: number;
 }

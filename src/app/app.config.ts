@@ -35,11 +35,9 @@ export const appConfig: ApplicationConfig = {
     { provide: MAT_DATE_FORMATS, useValue: PT_BR_DATE_FORMATS },
 
     importProvidersFrom(MatSnackBarModule),
-
-    // 👇 HttpClient puxa interceptors do DI
+    
     provideHttpClient(withInterceptorsFromDi()),
-
-    // 👇 Interceptors registrados no DI (ordem importa)
+    
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthErrorInterceptor, multi: true },
   ],

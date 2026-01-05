@@ -111,7 +111,7 @@ export class ProjectFormComponent implements OnInit {
     }
   }
 
-  // ✅ usado no HTML
+  
   onSubmit(): void {
     this.onSave();
   }
@@ -136,8 +136,7 @@ export class ProjectFormComponent implements OnInit {
           description: p.description,
           value: Number(p.value),
           active: p.active,
-
-          // ✅ API yyyy-MM-dd -> Date local (sem timezone bug)
+          
           startDate: this.parseYmdToDate(p.startDate),
           endDate: p.endDate ? this.parseYmdToDate(p.endDate) : null
         });
@@ -153,7 +152,7 @@ export class ProjectFormComponent implements OnInit {
   private parseYmdToDate(ymd: string): Date | null {
     if (!ymd) return null;
 
-    // ymd esperado: yyyy-MM-dd
+    
     const parts = ymd.split('-');
     if (parts.length !== 3) return null;
 
@@ -163,7 +162,7 @@ export class ProjectFormComponent implements OnInit {
 
     if (!y || !m || !d) return null;
 
-    // ✅ Date local: evita virar "dia anterior" por timezone
+    
     const dt = new Date(y, m - 1, d);
     return isNaN(dt.getTime()) ? null : dt;
   }
@@ -186,8 +185,7 @@ export class ProjectFormComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
-
-    // ✅ payload no formato que o backend espera: yyyy-MM-dd
+    
     const payload = {
       name: String(raw.name).trim(),
       description: String(raw.description || '').trim(),

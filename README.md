@@ -1,107 +1,219 @@
-🖥️ BNDES Projetos Web
+# 🖥️ BNDES Projetos Web
 
-Frontend desenvolvido em Angular + Angular Material para consumo da API BNDES Projetos, com foco em organização, UX e integração segura via JWT.
+![Angular](https://img.shields.io/badge/Angular-19-DD0031?logo=angular)
+![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript)
+![Node](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)
+![Material](https://img.shields.io/badge/Angular%20Material-UI-673AB7)
+![Status](https://img.shields.io/badge/Status-Em%20Evolução-blue)
 
-🚀 O que este sistema faz
+Frontend desenvolvido em **Angular 19 + Angular Material**, responsável pelo consumo da **API BNDES Projetos**, com foco em **organização**, **experiência do usuário (UX)** e **integração segura via JWT**.
 
-Permite cadastro e autenticação de usuários (Login / Register)
+---
 
-Lista projetos com paginação, filtro e ordenação
+## 📌 Sumário
+- [Visão Geral](#-visão-geral)
+- [Funcionalidades](#-funcionalidades)
+- [Tecnologias](#-tecnologias)
+- [Arquitetura](#-arquitetura)
+- [Requisitos](#-requisitos)
+- [Execução do Projeto](#-execução-do-projeto)
+- [Autenticação e Segurança](#-autenticação-e-segurança)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Scripts Disponíveis](#-scripts-disponíveis)
+- [Configurações de Ambiente](#-configurações-de-ambiente)
+- [Padrões e Boas Práticas](#-padrões-e-boas-práticas)
+- [Roadmap](#-roadmap)
+- [Contribuição](#-contribuição)
+- [Licença](#-licença)
 
-Permite CRUD de projetos (criar, editar, visualizar e excluir)
+---
 
-Aplica formatação de moeda (BRL) e datas (pt-BR)
+## 🎯 Visão Geral
 
-Protege rotas com AuthGuard
+O **BNDES Projetos Web** é a camada **frontend** da plataforma BNDES Projetos, oferecendo uma interface moderna, responsiva e segura para gerenciamento de projetos e usuários.
 
-Anexa JWT automaticamente nas requisições (Interceptor)
+O sistema utiliza **Angular Standalone Components**, interceptors para segurança e uma estrutura organizada por domínios.
 
-Trata 401/403 globalmente com redirecionamento e mensagem (Interceptor)
+---
 
-🧰 Tecnologias
+## 🚀 Funcionalidades
 
-Angular 19 (Standalone Components)
+### 🔐 Autenticação
+- Cadastro de usuários (**Register**)
+- Autenticação via **Login**
+- Armazenamento de token **JWT**
+- Proteção de rotas com **AuthGuard**
 
-TypeScript
+### 📁 Gestão de Projetos
+- Listagem de projetos com paginação, filtros e ordenação
+- CRUD completo (Criar, Editar, Visualizar e Excluir)
 
-Angular Material
+### 🎨 Experiência do Usuário
+- Angular Material
+- Formatação de moeda (**BRL**)
+- Datas (**pt-BR**)
+- Feedback visual
 
-RxJS
+### 🛡️ Segurança
+- JWT via Interceptor
+- Tratamento global de **401 / 403**
+- Redirecionamento para login
 
-Angular Router
+---
 
-📡 Integração com a API (Proxy)
+## 🧰 Tecnologias
 
-Este frontend usa proxy no ambiente de desenvolvimento para evitar problemas de CORS.
+- Angular 19 (Standalone)
+- TypeScript
+- Angular Material
+- RxJS
+- Angular Router
 
-Arquivo: proxy.conf.json
+---
 
-Rotas encaminhadas para a API:
-- /auth    -> http://127.0.0.1:8080
-- /projects -> http://127.0.0.1:8080
-- /health  -> http://127.0.0.1:8080
+## 🏗️ Arquitetura
 
-Obs.: O proxy já está configurado no angular.json (serve.options.proxyConfig).
+```txt
+┌──────────────┐
+│   Browser    │
+│  (Angular)   │
+└──────┬───────┘
+       │ HTTP + JWT
+┌──────▼────────┐
+│ Interceptors  │
+│ Auth / Errors │
+└──────┬────────┘
+       │
+┌──────▼────────┐
+│   Services    │
+│  (Core/API)   │
+└──────┬────────┘
+       │
+┌──────▼────────┐
+│   Backend     │
+│ Spring Boot  │
+└───────────────┘
+```
 
-✅ Requisitos
+---
 
-Node.js 18+ (recomendado)
+## ✅ Requisitos
 
-Angular CLI 19+
+- Node.js 18+
+- Angular CLI 19+
+- API rodando em `http://127.0.0.1:8080`
 
-API rodando em http://127.0.0.1:8080
+---
 
-▶️ Rodar aplicação (dev)
+## ▶️ Execução do Projeto
 
-1) Instalar dependências
+```bash
 npm install
-
-2) Subir o frontend
 ng serve
+```
 
-Frontend: http://localhost:4200
+Frontend: `http://localhost:4200`
 
-▶️ Rodar a API (backend)
+Backend (Docker):
 
-No projeto bndes-projetos-api (recomendado via Docker Compose):
+```bash
 docker compose up --build
+```
 
-API: http://localhost:8080
+---
 
+## 🔐 Autenticação e Segurança
 
-🔐 Autenticação e segurança (resumo)
+- JWT armazenado no navegador
+- Header automático:
 
-Token JWT é armazenado no navegador e enviado automaticamente no header Authorization pelo jwt.interceptor.
+```http
+Authorization: Bearer <token>
+```
 
-Erros 401/403 são tratados globalmente pelo auth-error.interceptor, exibindo mensagem e redirecionando para /login quando necessário.
+- Interceptors:
+  - `jwt.interceptor`
+  - `auth-error.interceptor`
 
-📁 Estrutura (resumo)
+---
 
-src/app/core/auth
-- auth.service.ts
-- auth.guard.ts
-- jwt.interceptor.ts
-- auth-error.interceptor.ts
+## 📁 Estrutura do Projeto
 
-src/app/core/projects
-- project.service.ts
+```txt
+src/app
+├── core
+│   ├── auth
+│   └── projects
+├── layout
+│   └── main-layout
+└── pages
+    ├── login
+    ├── register
+    └── projects
+```
 
-src/app/layout
-- main-layout (toolbar, logout, router-outlet)
+---
 
-src/app/pages
-- login
-- register
-- projects (list/detail/form)
+## 🧪 Scripts Disponíveis
 
-✅ Considerações finais
+```bash
+ng serve
+ng build
+ng test
+ng lint
+```
 
-Este projeto busca entregar um frontend funcional e organizado, com:
+---
 
-Integração limpa com a API
+## ⚙️ Configurações de Ambiente
 
-Boa experiência de uso (filtros, paginação, feedback)
+- `environment.ts` para produção
+- Proxy para desenvolvimento
 
-Padrões de segurança básicos (JWT + proteção de rotas)
+---
 
-Facilidade de manutenção e evolução
+## 📐 Padrões e Boas Práticas
+
+- Standalone Components
+- Guards
+- Interceptors
+- Services desacoplados
+- Estrutura escalável
+
+---
+
+## 🛣️ Roadmap
+
+- [ ] Refresh Token
+- [ ] Roles (ADMIN / USER)
+- [ ] Testes unitários completos
+- [ ] CI/CD
+- [ ] Build Docker
+
+---
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch (`feat/minha-feature`)
+3. Commit seguindo o padrão
+4. Abra um Pull Request
+
+### Padrão de Commit
+
+```txt
+feat: nova funcionalidade
+fix: correção de bug
+refactor: refatoração
+docs: documentação
+```
+
+---
+
+## 📄 Licença
+
+Este projeto é distribuído sob a licença **MIT**.
+
+---
+
+📌 Projeto em evolução contínua.

@@ -13,8 +13,7 @@ export class PtBrDateAdapter extends NativeDateAdapter {
     if (typeof value === 'string') {
       const trimmed = value.trim();
       if (!trimmed) return null;
-
-      // ✅ Só aceita dd/MM/yyyy COMPLETO
+      
       const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
       if (!match) return null;
 
@@ -26,8 +25,7 @@ export class PtBrDateAdapter extends NativeDateAdapter {
       if (dd < 1 || dd > 31) return null;
 
       const d = new Date(yyyy, mm - 1, dd);
-
-      // evita overflow: 31/02 virar março
+      
       if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) {
         return null;
       }

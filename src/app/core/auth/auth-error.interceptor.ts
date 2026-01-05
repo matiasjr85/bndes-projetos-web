@@ -23,8 +23,7 @@ export class AuthErrorInterceptor implements HttpInterceptor {
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-
-        // 👉 erro no login NÃO dispara logout
+        
         if (req.url.includes('/auth/login')) {
           return throwError(() => error);
         }

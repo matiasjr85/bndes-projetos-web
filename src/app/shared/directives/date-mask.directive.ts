@@ -6,15 +6,14 @@ import { NgControl } from '@angular/forms';
   standalone: true,
 })
 export class DateMaskDirective {
-  private readonly MAX_DIGITS = 8; // ddMMyyyy
-  private readonly MAX_LEN = 10;   // dd/MM/yyyy
+  private readonly MAX_DIGITS = 8; 
+  private readonly MAX_LEN = 10;   
 
   constructor(
     private el: ElementRef<HTMLInputElement>,
     @Optional() private ngControl: NgControl
   ) {}
-
-  // ✅ bloqueia letras e mantém navegação/atalhos
+  
   @HostListener('keydown', ['$event'])
   onKeyDown(e: KeyboardEvent) {
     const allowed = [
@@ -57,19 +56,16 @@ export class DateMaskDirective {
 
     const control = this.ngControl?.control;
     if (!control) return;
-
-    // ✅ se limpou, zera de verdade
+    
     if (digits.length === 0) {
       control.setValue(null, { emitEvent: true });
       return;
     }
-
-    // ✅ só seta Date quando COMPLETO
+    
     if (digits.length === 8) {
       const parsed = this.parseDdMmYyyy(digits);
       control.setValue(parsed, { emitEvent: true });
-    }
-    // ✅ se incompleto: NÃO mexe no valor do control (evita “autocompletes”/trocas)
+    }    
   }
 
   private applyMask(digits: string): string {
@@ -88,8 +84,7 @@ export class DateMaskDirective {
     if (day < 1 || day > 31) return null;
 
     const d = new Date(year, month - 1, day);
-
-    // roundtrip (31/02 etc)
+    
     if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
 
     return d;

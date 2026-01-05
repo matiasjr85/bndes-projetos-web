@@ -75,8 +75,7 @@ export class LoginComponent implements OnInit {
       .login({ email, password })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: () => {
-          // respeita o returnUrl sanitizado (padrão: /projects)
+        next: () => {          
           this.router.navigateByUrl(this.returnUrl);
         },
         error: (err) => {
@@ -85,8 +84,7 @@ export class LoginComponent implements OnInit {
             err?.error?.details?.message ||
             err?.error?.details?.error ||
             null;
-
-          // Mensagem amigável pro caso mais comum
+          
           const msg =
             apiMsg ||
             (err?.status === 401
@@ -102,11 +100,9 @@ export class LoginComponent implements OnInit {
     if (!value) return null;
 
     const trimmed = value.trim();
-
-    // bloqueia urls absolutas (open redirect)
+    
     if (/^([a-zA-Z][a-zA-Z0-9+.-]*:)?\/\//.test(trimmed)) return null;
-
-    // só permite rotas internas
+    
     if (!trimmed.startsWith('/')) return null;
 
     return trimmed;
